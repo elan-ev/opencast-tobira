@@ -50,6 +50,7 @@ import org.opencastproject.security.api.OrganizationDirectoryService;
 import org.opencastproject.security.api.SecurityService;
 import org.opencastproject.security.api.UnauthorizedException;
 import org.opencastproject.security.util.SecurityUtil;
+import org.opencastproject.series.api.Series;
 import org.opencastproject.series.api.SeriesException;
 import org.opencastproject.series.api.SeriesQuery;
 import org.opencastproject.series.api.SeriesService;
@@ -75,6 +76,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -362,6 +364,22 @@ public class SeriesServiceImpl extends AbstractIndexProducer implements SeriesSe
       throw new SeriesException(e);
     }
   }
+
+  @Override
+  public List<Series> getAllForAdministrativeRead(Date from, Optional<Date> to, int limit)
+          throws SeriesException {
+    try {
+      return persistence.getAllForAdministrativeRead(from, to, limit);
+    } catch (SeriesServiceDatabaseException e) {
+      String msg = String.format(
+          "Exception while reading all series in range %s to %s from persistence storage",
+          from,
+          to
+      );
+      throw new SeriesException(msg, e);
+    }
+  }
+
 
   @Override
   public Map<String, String> getIdTitleMapOfAllSeries() throws SeriesException, UnauthorizedException {
