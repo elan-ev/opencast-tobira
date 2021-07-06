@@ -342,7 +342,7 @@ public class TobiraApi {
         this.obj = Jsons.obj(
           Jsons.p("kind", "series-deleted"),
           Jsons.p("id", series.getId()),
-          Jsons.p("modified", series.getModifiedDate().getTime())
+          Jsons.p("updated", series.getModifiedDate().getTime())
         );
       } else {
         this.obj = Jsons.obj(
@@ -350,7 +350,7 @@ public class TobiraApi {
           Jsons.p("id", series.getId()),
           Jsons.p("title", series.getDublinCore().getFirst(PROPERTY_TITLE)),
           Jsons.p("description", series.getDublinCore().getFirst(PROPERTY_DESCRIPTION)),
-          Jsons.p("modified", series.getModifiedDate().getTime())
+          Jsons.p("updated", series.getModifiedDate().getTime())
         );
       }
     }
