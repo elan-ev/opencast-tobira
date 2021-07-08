@@ -444,6 +444,7 @@ public class SeriesServiceDatabaseImpl implements SeriesServiceDatabase {
         series.setId(entity.getSeriesId());
         series.setOrganization(entity.getOrganization());
         series.setDublinCore(DublinCoreXmlFormat.read(entity.getDublinCoreXML()));
+        series.setAccessControl(entity.getAccessControl());
         series.setModifiedDate(entity.getModifiedDate());
         series.setDeletionDate(entity.getDeletionDate());
         out.add(series);
