@@ -4,9 +4,9 @@ dependencies:
   - elan.opencast_activemq
   # configure firewalld before certbot
   - elan.opencast_firewalld
-  - elan.opencast_certbot
+  - certbot
   - elan.opencast_elasticsearch
-  - elan.opencast_nginx
+  - nginx
   - elan.opencast_postgresql
   - elan.opencast_repository
   - elan.opencast_selinux
