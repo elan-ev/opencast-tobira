@@ -49,6 +49,7 @@ import org.opencastproject.rest.RestConstants;
 import org.opencastproject.security.api.AccessControlList;
 import org.opencastproject.security.api.AccessControlParser;
 import org.opencastproject.security.api.UnauthorizedException;
+import org.opencastproject.series.api.Series;
 import org.opencastproject.series.api.SeriesException;
 import org.opencastproject.series.api.SeriesQuery;
 import org.opencastproject.series.api.SeriesService;
@@ -68,6 +69,7 @@ import com.entwinemedia.fn.data.Opt;
 import com.entwinemedia.fn.data.json.JValue;
 import com.entwinemedia.fn.data.json.Jsons;
 import com.entwinemedia.fn.data.json.SimpleSerializer;
+import com.google.gson.Gson;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -84,7 +86,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
@@ -343,6 +348,91 @@ public class SeriesRestService {
   )
   public Response getSeriesAccessControlListJson(@PathParam("seriesID") String seriesID) {
     return getSeriesAccessControlList(seriesID);
+  }
+
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/allInRangeAdministrative.json")
+  @RestQuery(
+      name = "allInRangeAdministrative",
+      description = "Internal API! Returns all series (included deleted ones!) in the given "
+          + "range 'from' (inclusive) .. 'to' (exclusive). Returns at most 'limit' many series. "
+          + "Can only be used as administrator!",
+      returnDescription = "Series in the range",
+      restParameters = {
+          @RestParameter(
+              name = "from",
+              isRequired = true,
+              description = "Start of date range (inclusive) in milliseconds "
+                  + "since 1970-01-01T00:00:00Z. Has to be >=0.",
+              type = Type.INTEGER
+          ),
+          @RestParameter(
+              name = "to",
+              isRequired = false,
+              // TODO: this shows the default value as 0 despite us not setting this value!
+              description = "End of date range (exclusive) in milliseconds "
+                  + "since 1970-01-01T00:00:00Z. Has to be > 'from'.",
+              type = Type.INTEGER
+          ),
+          @RestParameter(
+              name = "limit",
+              isRequired = true,
+              description = "Maximum number of series to be returned. Has to be >0.",
+              type = Type.INTEGER
+          ),
+      },
+      responses = {
+          @RestResponse(responseCode = SC_OK, description = "All series in the range"),
+          @RestResponse(responseCode = SC_BAD_REQUEST, description = "if the given parameters are invalid"),
+          @RestResponse(responseCode = SC_UNAUTHORIZED, description = "If the user is not an administrator"),
+      }
+  )
+  public Response getAllInRangeAdministrative(
+      @FormParam("from") Long from,
+      @FormParam("to") Long to,
+      @FormParam("limit") Integer limit
+  ) throws UnauthorizedException {
+    // Parameter error handling
+    if (from == null) {
+      return badRequest("Required parameter 'from' not specified");
+    }
+    if (limit == null) {
+      return badRequest("Required parameter 'limit' not specified");
+    }
+    if (from < 0) {
+      return badRequest("Parameter 'from' < 0, but it has to be >= 0");
+    }
+    if (to != null && to <= from) {
+      return badRequest("Parameter 'to' <= 'from', but that is not allowed");
+    }
+    if (limit <= 0) {
+      return badRequest("Parameter 'limit' <= 0, but it has to be > 0");
+    }
+
+    try {
+      final List<Series> series = seriesService.getAllForAdministrativeRead(
+          new Date(from),
+          Optional.ofNullable(to).map(millis -> new Date(millis)),
+          limit);
+
+      Gson gson = new Gson();
+      return Response.ok(gson.toJson(series)).build();
+    } catch (SeriesException e) {
+      logger.error("Unexpected exception in getAllInRangeAdministrative", e);
+      return Response.status(INTERNAL_SERVER_ERROR)
+          .entity("internal server error")
+          .build();
+    }
+  }
+
+  /**
+   * Returns a {@code Response} object representing a BAD_REQUEST with the given
+   * message as body. Also logs the message.
+   */
+  private static Response badRequest(String msg) {
+    logger.warn("Bad request to /series/allInRangeAdministrative: {}", msg);
+    return Response.status(BAD_REQUEST).entity(msg).build();
   }
 
   /**
