@@ -162,6 +162,7 @@ public class SolrRequester {
    *           if the solr server is not working as expected
    */
   private SearchResult createSearchResult(final SolrQuery query, final boolean signed) throws SolrServerException {
+    logger.info("START createSearchResult");
 
     // Execute the query and try to get hold of a query response
     QueryResponse solrResponse = null;
@@ -170,6 +171,7 @@ public class SolrRequester {
     } catch (Exception e) {
       throw new SolrServerException(e);
     }
+    logger.info("executed query");
 
     // Create and configure the query result
     final SearchResultImpl result = new SearchResultImpl(query.getQuery());
@@ -177,6 +179,7 @@ public class SolrRequester {
     result.setOffset(solrResponse.getResults().getStart());
     result.setLimit(Optional.ofNullable(query.getRows()).map(i -> Long.valueOf(i)));
     result.setTotal(solrResponse.getResults().getNumFound());
+    logger.info("prepared result");
 
     // Walk through response and create new items with title, creator, etc:
     MediaPackageBuilder mpBuilder = MediaPackageBuilderFactory.newInstance().newMediaPackageBuilder();
@@ -405,6 +408,8 @@ public class SolrRequester {
       // Add the item to the result set
       result.addItem(item);
     }
+    logger.info("filled items");
+
 
     return result;
   }
@@ -845,7 +850,9 @@ public class SolrRequester {
    * @throws SolrServerException
    */
   public SearchResult getForAdministrativeRead(SearchQuery q) throws SolrServerException {
+    logger.info("START getForAdministrativeRead");
     SolrQuery query = getForAction(q, READ.toString(), false);
+    logger.info("gotten query");
     return createSearchResult(query, q.willSignURLs());
   }
 
