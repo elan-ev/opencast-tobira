@@ -179,6 +179,10 @@ public class SolrRequester {
     result.setTotal(solrResponse.getResults().getNumFound());
 
     // Walk through response and create new items with title, creator, etc:
+    MediaPackageBuilder mpBuilder = MediaPackageBuilderFactory.newInstance().newMediaPackageBuilder();
+    if (signed && serializer != null) {
+      mpBuilder.setSerializer(serializer);
+    }
     for (final SolrDocument doc : solrResponse.getResults()) {
       final SearchResultItemImpl item = SearchResultItemImpl.fill(new SearchResultItem() {
         private final String dfltString = null;
@@ -200,14 +204,10 @@ public class SolrRequester {
 
         @Override
         public MediaPackage getMediaPackage() {
-          MediaPackageBuilder builder = MediaPackageBuilderFactory.newInstance().newMediaPackageBuilder();
-          if (signed && serializer != null) {
-            builder.setSerializer(serializer);
-          }
           String mediaPackageFieldValue = Schema.getOcMediapackage(doc);
           if (mediaPackageFieldValue != null) {
             try {
-              return builder.loadFromXml(mediaPackageFieldValue);
+              return mpBuilder.loadFromXml(mediaPackageFieldValue);
             } catch (Exception e) {
               logger.warn("Unable to read media package from search result", e);
             }
