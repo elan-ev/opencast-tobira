@@ -21,8 +21,8 @@
 
 package org.opencastproject.series.impl.persistence;
 
+import java.time.Instant;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -30,6 +30,7 @@ import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -43,8 +44,6 @@ import javax.persistence.MapKeyColumn;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.persistence.UniqueConstraint;
 
 /**
@@ -111,12 +110,12 @@ public class SeriesEntity {
   protected String accessControl;
 
   @Column(name = "modified_date", nullable = false)
-  @Temporal(TemporalType.TIMESTAMP)
-  protected Date modifiedDate = new Date();
+  @Convert(converter = InstantConverter.class)
+  protected Instant modifiedDate = Instant.now();
 
   @Column(name = "deletion_date")
-  @Temporal(TemporalType.TIMESTAMP)
-  protected Date deletionDate = null;
+  @Convert(converter = InstantConverter.class)
+  protected Instant deletionDate = null;
 
   @Lob
   @ElementCollection(targetClass = String.class)
@@ -222,19 +221,19 @@ public class SeriesEntity {
     this.organization = organization;
   }
 
-  public Date getModifiedDate() {
+  public Instant getModifiedDate() {
     return this.modifiedDate;
   }
 
-  public void setModifiedDate(Date date) {
+  public void setModifiedDate(Instant date) {
     this.modifiedDate = date;
   }
 
-  public Date getDeletionDate() {
+  public Instant getDeletionDate() {
     return this.deletionDate;
   }
 
-  public void setDeletionDate(Date date) {
+  public void setDeletionDate(Instant date) {
     this.deletionDate = date;
   }
 

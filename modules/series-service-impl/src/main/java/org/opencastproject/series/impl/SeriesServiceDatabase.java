@@ -31,7 +31,7 @@ import org.opencastproject.util.data.Tuple;
 
 import com.entwinemedia.fn.data.Opt;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -114,7 +114,7 @@ public interface SeriesServiceDatabase {
    * most {@code limit} many series are returned. ACLs/permissions are NOT
    * checked as this is only intended to be used in an administrative context.
    */
-  List<Series> getAllForAdministrativeRead(Date from, Optional<Date> to, int limit)
+  List<Series> getAllForAdministrativeRead(Instant from, Optional<Instant> to, int limit)
           throws SeriesServiceDatabaseException, UnauthorizedException;
 
   /**

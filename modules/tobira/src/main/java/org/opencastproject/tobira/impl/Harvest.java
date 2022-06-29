@@ -32,8 +32,11 @@ import org.opencastproject.workspace.api.Workspace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Optional;
@@ -62,13 +65,13 @@ final class Harvest {
    * period". Writes that take longer (i.e. the time between `new Date()` and the serialization in
    * the DB/index) than this buffer could lead to missed updates with this harvesting API.
    */
-  private static final long TIME_BUFFER_SIZE = 3 * 60 * 1000;
+  private static final Duration TIME_BUFFER_SIZE = Duration.ofMinutes(3);
 
   private static final Logger logger = LoggerFactory.getLogger(Harvest.class);
 
   static Jsons.Obj harvest(
       int preferredAmount,
-      Date since,
+      Instant since,
       SearchService searchService,
       SeriesService seriesService,
       Workspace workspace
@@ -78,7 +81,8 @@ final class Harvest {
     // We actually fetch `preferredAmount + 1` to get some useful extra information: whether there
     // are more events and if so, what timestamp that extra event was modified at.
     final var q = new SearchQuery()
-        .withUpdatedSince(since)
+        // TODO: ideally the search service would stop using `Date`
+        .withUpdatedSince(new Date(since.toEpochMilli()))
         .withSort(SearchQuery.Sort.DATE_MODIFIED)
         .includeDeleted(true)
         .withLimit(preferredAmount + 1);
@@ -100,8 +104,8 @@ final class Harvest {
     // We also fetch `preferredAmount + 1` here to be able to know whether there are more series
     // in the given time range, which allows us to figure out `hasMore` and `includesItemsUntil`
     // more precisely.
-    final Optional<Date> seriesRangeEnd = hasMoreEvents
-        ? Optional.of(rawEvents[rawEvents.length - 1].getModified())
+    final Optional<Instant> seriesRangeEnd = hasMoreEvents
+        ? Optional.of(Instant.ofEpochMilli(rawEvents[rawEvents.length - 1].getModified().getTime()))
         : Optional.empty();
     final var rawSeries = seriesService.getAllForAdministrativeRead(
         since,
@@ -133,7 +137,7 @@ final class Harvest {
           }
 
           final var lastSeriesModifiedDate = rawSeries.get(rawSeries.size() - 1).getModifiedDate();
-          return !event.getModified().after(lastSeriesModifiedDate);
+          return !Instant.ofEpochMilli(event.getModified().getTime()).isAfter(lastSeriesModifiedDate);
         })
         .map(event -> new Item(event, workspace));
 
@@ -154,10 +158,10 @@ final class Harvest {
 
     // Obtain information to allow Tobira to plan the next harvesting request.
     final var hasMore = hasMoreEvents || hasMoreSeriesInRange;
-    final Date includesItemsUntilRaw;
+    final Instant includesItemsUntilRaw;
     if (!hasMoreEvents && !hasMoreSeriesInRange) {
       // All events and series up to now have been harvested.
-      includesItemsUntilRaw = new Date();
+      includesItemsUntilRaw = Instant.now();
     } else if (!hasMoreEvents && hasMoreSeriesInRange) {
       // `rawEvents` contains all events that currently exist. Our response won't contain the ones
       // that have a modified date after the one of the last raw series. But that means that we
@@ -167,7 +171,7 @@ final class Harvest {
       // There are more events, but no additional series in the range from `since` to the modified
       // date of the last raw event. So we know there are no other events or series before the
       // last raw events.
-      includesItemsUntilRaw = rawEvents[rawEvents.length - 1].getModified();
+      includesItemsUntilRaw = Instant.ofEpochMilli(rawEvents[rawEvents.length - 1].getModified().getTime());
     } else {
       // There are more events and more series in the given range. In theory, this would be
       // `Math.min()` of the last raw event and last raw series. However, since `hasMoreEvents`
@@ -179,18 +183,17 @@ final class Harvest {
 
     // The `includesItemsUntil` we return has to be at least `TIME_BUFFER_SIZE` in the past. See
     // the constant's documentation for more information on that.
-    final var includesItemsUntil = Math.min(
-        includesItemsUntilRaw.getTime(),
-        new Date().getTime() - TIME_BUFFER_SIZE
-    );
-
+    final var includesItemsUntil = Collections.min(Arrays.asList(
+        includesItemsUntilRaw,
+        Instant.now().minus(TIME_BUFFER_SIZE)
+    ));
 
     // Assembly full response.
     final var outItems = items.stream()
         .map(item -> item.getJson())
         .collect(Collectors.toCollection(ArrayList::new));
     final var json = Jsons.obj(
-        Jsons.p("includesItemsUntil", includesItemsUntil),
+        Jsons.p("includesItemsUntil", includesItemsUntil.toEpochMilli()),
         Jsons.p("hasMore", hasMore),
         Jsons.p("items", Jsons.arr(outItems))
     );
@@ -198,7 +201,7 @@ final class Harvest {
         "Returning {} items from harvesting (hasMore = {}, includesItemsUntil = {})",
         items.size(),
         hasMore,
-        new Date(includesItemsUntil)
+        includesItemsUntil
     );
 
     return json;

@@ -23,7 +23,7 @@ package org.opencastproject.series.api;
 
 import org.opencastproject.metadata.dublincore.DublinCoreCatalog;
 
-import java.util.Date;
+import java.time.Instant;
 
 
 /**
@@ -42,13 +42,13 @@ public class Series {
   /** Serialized access control lists */
   private String accessControl;
 
-  /** Date of the last time anything about this series was modified */
-  private Date modifiedDate;
+  /** Instant of the last time anything about this series was modified */
+  private Instant modifiedDate;
 
   /**
-   * Date of the last time this series was deleted, or {@code null} if it is not currently deleted.
+   * Instant of the last time this series was deleted, or {@code null} if it is not currently deleted.
    */
-  private Date deletionDate;
+  private Instant deletionDate;
 
 
   public String getId() {
@@ -83,19 +83,19 @@ public class Series {
     this.accessControl = accessControl;
   }
 
-  public Date getModifiedDate() {
+  public Instant getModifiedDate() {
     return this.modifiedDate;
   }
 
-  public void setModifiedDate(Date modifiedDate) {
+  public void setModifiedDate(Instant modifiedDate) {
     this.modifiedDate = modifiedDate;
   }
 
-  public Date getDeletionDate() {
+  public Instant getDeletionDate() {
     return this.deletionDate;
   }
 
-  public void setDeletionDate(Date deletionDate) {
+  public void setDeletionDate(Instant deletionDate) {
     this.deletionDate = deletionDate;
   }
 

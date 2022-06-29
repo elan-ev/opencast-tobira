@@ -76,6 +76,7 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -392,8 +393,8 @@ public class SeriesServiceImpl extends AbstractIndexProducer implements SeriesSe
 
   @Override
   public List<org.opencastproject.series.api.Series> getAllForAdministrativeRead(
-      Date from,
-      Optional<Date> to,
+      Instant from,
+      Optional<Instant> to,
       int limit
   ) throws SeriesException, UnauthorizedException {
     try {

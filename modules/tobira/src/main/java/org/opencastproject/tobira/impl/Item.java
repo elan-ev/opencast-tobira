@@ -40,9 +40,9 @@ import org.opencastproject.workspace.api.Workspace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -57,12 +57,12 @@ import java.util.stream.Collectors;
 class Item {
   private static final Logger logger = LoggerFactory.getLogger(Item.class);
 
-  private Date modifiedDate;
+  private Instant modifiedDate;
   private Jsons.Val obj;
 
   /** Converts a event into the corresponding JSON representation */
   Item(SearchResultItem event, Workspace workspace) {
-    this.modifiedDate = event.getModified();
+    this.modifiedDate = Instant.ofEpochMilli(event.getModified().getTime());
 
     if (event.getDeletionDate() != null) {
       this.obj = Jsons.obj(
@@ -246,12 +246,13 @@ class Item {
   /** Converts a series into the corresponding JSON representation */
   Item(Series series) {
     this.modifiedDate = series.getModifiedDate();
+    logger.error("series in harvest API: {}", series.getModifiedDate());
 
     if (series.isDeleted()) {
       this.obj = Jsons.obj(
         Jsons.p("kind", "series-deleted"),
         Jsons.p("id", series.getId()),
-        Jsons.p("updated", series.getModifiedDate().getTime())
+        Jsons.p("updated", series.getModifiedDate().toEpochMilli())
       );
     } else {
       this.obj = Jsons.obj(
@@ -259,12 +260,12 @@ class Item {
         Jsons.p("id", series.getId()),
         Jsons.p("title", series.getDublinCore().getFirst(PROPERTY_TITLE)),
         Jsons.p("description", series.getDublinCore().getFirst(PROPERTY_DESCRIPTION)),
-        Jsons.p("updated", series.getModifiedDate().getTime())
+        Jsons.p("updated", series.getModifiedDate().toEpochMilli())
       );
     }
   }
 
-  Date getModifiedDate() {
+  Instant getModifiedDate() {
     return this.modifiedDate;
   }
 

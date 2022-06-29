@@ -70,6 +70,7 @@ import com.entwinemedia.fn.data.json.JValue;
 import com.entwinemedia.fn.data.json.Jsons;
 import com.entwinemedia.fn.data.json.SimpleSerializer;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -86,7 +87,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -130,7 +131,9 @@ public class SeriesRestService {
 
   private static final String SERIES_ELEMENT_CONTENT_TYPE_PREFIX = "series/";
 
-  private static final Gson gson = new Gson();
+  private static final Gson gson = new GsonBuilder()
+      // .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+      .create();
 
   /** Logging utility */
   private static final Logger logger = LoggerFactory.getLogger(SeriesRestService.class);
@@ -414,9 +417,13 @@ public class SeriesRestService {
 
     try {
       final List<Series> series = seriesService.getAllForAdministrativeRead(
-          new Date(from),
-          Optional.ofNullable(to).map(millis -> new Date(millis)),
+          Instant.ofEpochMilli(from),
+          Optional.ofNullable(to).map(millis -> Instant.ofEpochMilli(millis)),
           limit);
+
+      for (var s: series) {
+        logger.error("series before gson serializ: {}", s.getModifiedDate());
+      }
 
       return Response.ok(gson.toJson(series)).build();
     } catch (SeriesException e) {

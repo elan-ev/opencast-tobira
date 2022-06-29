@@ -90,8 +90,8 @@ import java.io.StringWriter;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -337,17 +337,19 @@ public class SeriesServiceRemoteImpl extends RemoteBase implements SeriesService
   }
 
   @Override
-  public List<Series> getAllForAdministrativeRead(Date from, Optional<Date> to, int limit)
+  public List<Series> getAllForAdministrativeRead(Instant from, Optional<Instant> to, int limit)
           throws SeriesException, UnauthorizedException {
     // Assemble URL
     StringBuilder url = new StringBuilder();
     url.append("/allInRangeAdministrative.json?");
 
     List<NameValuePair> queryParams = new ArrayList<>();
-    queryParams.add(new BasicNameValuePair("from", Long.toString(from.getTime())));
+    logger.error("from in remote impl: {}", from);
+
+    queryParams.add(new BasicNameValuePair("from", Long.toString(from.toEpochMilli())));
     queryParams.add(new BasicNameValuePair("limit", Integer.toString(limit)));
     if (to.isPresent()) {
-      queryParams.add(new BasicNameValuePair("to", Long.toString(to.get().getTime())));
+      queryParams.add(new BasicNameValuePair("to", Long.toString(to.get().toEpochMilli())));
     }
     url.append(URLEncodedUtils.format(queryParams, StandardCharsets.UTF_8));
     HttpGet get = new HttpGet(url.toString());
@@ -366,7 +368,12 @@ public class SeriesServiceRemoteImpl extends RemoteBase implements SeriesService
       } else {
         // Retrieve and deserialize data
         Reader reader = new InputStreamReader(response.getEntity().getContent(), "UTF-8");
-        return gson.fromJson(reader, seriesListType);
+        ArrayList<Series> out = gson.fromJson(reader, seriesListType);
+        for (var s: out) {
+          logger.error("series after gson deser: {}", s.getModifiedDate());
+        }
+
+        return out;
       }
     } catch (IOException e) {
       throw new SeriesException("failed to reader response body of /allInRangeAdministrative.json", e);

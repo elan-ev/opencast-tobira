@@ -39,7 +39,7 @@ import org.osgi.service.component.annotations.Activate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Date;
+import java.time.Instant;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
@@ -134,7 +134,7 @@ public class TobiraApi {
 
     try {
       var json = Harvest.harvest(
-          preferredAmount, new Date(since), searchService, seriesService, workspace);
+          preferredAmount, Instant.ofEpochMilli(since), searchService, seriesService, workspace);
 
       return Response.ok()
           .type(APPLICATION_JSON_TYPE)

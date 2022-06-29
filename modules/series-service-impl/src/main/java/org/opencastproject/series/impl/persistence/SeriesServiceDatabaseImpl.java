@@ -56,8 +56,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -178,7 +178,7 @@ public class SeriesServiceDatabaseImpl implements SeriesServiceDatabase {
         }
       }
 
-      Date now = new Date();
+      Instant now = Instant.now();
       entity.setModifiedDate(now);
       entity.setDeletionDate(now);
       em.merge(entity);
@@ -226,7 +226,7 @@ public class SeriesServiceDatabaseImpl implements SeriesServiceDatabase {
 
       properties.remove(propertyName);
       entity.setProperties(properties);
-      entity.setModifiedDate(new Date());
+      entity.setModifiedDate(Instant.now());
       em.merge(entity);
       tx.commit();
     } catch (NotFoundException e) {
@@ -329,7 +329,7 @@ public class SeriesServiceDatabaseImpl implements SeriesServiceDatabase {
         entity.setOrganization(securityService.getOrganization().getId());
         entity.setSeriesId(seriesId);
         entity.setSeries(seriesXML);
-        entity.setModifiedDate(new Date());
+        entity.setModifiedDate(Instant.now());
         em.persist(entity);
         newSeries = dc;
       } else {
@@ -344,7 +344,7 @@ public class SeriesServiceDatabaseImpl implements SeriesServiceDatabase {
           }
         }
         entity.setSeries(seriesXML);
-        entity.setModifiedDate(new Date());
+        entity.setModifiedDate(Instant.now());
         em.merge(entity);
       }
       tx.commit();
@@ -405,7 +405,7 @@ public class SeriesServiceDatabaseImpl implements SeriesServiceDatabase {
   }
 
   @Override
-  public List<Series> getAllForAdministrativeRead(Date from, Optional<Date> to, int limit)
+  public List<Series> getAllForAdministrativeRead(Instant from, Optional<Instant> to, int limit)
           throws SeriesServiceDatabaseException, UnauthorizedException {
     // Validate parameters
     if (limit <= 0) {
@@ -418,12 +418,14 @@ public class SeriesServiceDatabaseImpl implements SeriesServiceDatabase {
       throw new UnauthorizedException(user, getClass().getName() + ".getModifiedInRangeForAdministrativeRead");
     }
 
+    logger.error("from in persistance.gafar: {} = {}", from);
+
     // Load series from DB.
     EntityManager em = emf.createEntityManager();
     try {
       TypedQuery<SeriesEntity> q;
       if (to.isPresent()) {
-        if (from.after(to.get())) {
+        if (from.isAfter(to.get())) {
           throw new IllegalArgumentException("`from` is after `to`");
         }
 
@@ -448,6 +450,10 @@ public class SeriesServiceDatabaseImpl implements SeriesServiceDatabase {
         series.setAccessControl(entity.getAccessControl());
         series.setModifiedDate(entity.getModifiedDate());
         series.setDeletionDate(entity.getDeletionDate());
+        logger.error("modified of series {}: {} = {}",
+            entity.getSeriesId(),
+            entity.getModifiedDate(),
+            entity.getModifiedDate());
         out.add(series);
       }
 
@@ -611,7 +617,7 @@ public class SeriesServiceDatabaseImpl implements SeriesServiceDatabase {
         updated = true;
       }
       entity.setAccessControl(serializedAC);
-      entity.setModifiedDate(new Date());
+      entity.setModifiedDate(Instant.now());
       em.merge(entity);
       tx.commit();
       return updated;
@@ -665,7 +671,7 @@ public class SeriesServiceDatabaseImpl implements SeriesServiceDatabase {
       Map<String, String> properties = entity.getProperties();
       properties.put(propertyName, propertyValue);
       entity.setProperties(properties);
-      entity.setModifiedDate(new Date());
+      entity.setModifiedDate(Instant.now());
       em.merge(entity);
       tx.commit();
     } catch (NotFoundException e) {
@@ -730,7 +736,7 @@ public class SeriesServiceDatabaseImpl implements SeriesServiceDatabase {
         success = false;
       } else {
         series.addElement(type, data);
-        series.setModifiedDate(new Date());
+        series.setModifiedDate(Instant.now());
         em.merge(series);
         tx.commit();
         success = true;
@@ -763,7 +769,7 @@ public class SeriesServiceDatabaseImpl implements SeriesServiceDatabase {
       } else {
         if (series.getElements().containsKey(type)) {
           series.removeElement(type);
-          series.setModifiedDate(new Date());
+          series.setModifiedDate(Instant.now());
           em.merge(series);
           tx.commit();
           success = true;
