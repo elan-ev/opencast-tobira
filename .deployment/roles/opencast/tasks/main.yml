@@ -34,6 +34,7 @@
     path: /opt/opencast/etc
     owner: opencast
     group: opencast
+    recurse: true
 
 - name: create karaf instances directory
   file:
