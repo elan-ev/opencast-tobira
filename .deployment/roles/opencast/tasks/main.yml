@@ -13,7 +13,8 @@
 
 - name: extract distribution
   unarchive:
-    src: 'https://radosgw.public.os.wwu.de/opencast-daily/opencast-dist-allinone-15-SNAPSHOT.tar.gz'
+    # src: 'https://radosgw.public.os.wwu.de/opencast-daily/opencast-dist-allinone-15-SNAPSHOT.tar.gz'
+    src: 'https://github.com/opencast/opencast/releases/download/15.3/opencast-dist-allinone-15.3.tar.gz'
     dest: /opt
     remote_src: true
     owner: root
@@ -70,13 +71,6 @@
       - hunspell
       - nmap-ncat
     state: present
-
-- name: enable JWT stuff
-  lineinfile:
-    state: present
-    path: /opt/opencast/etc/org.apache.karaf.features.cfg
-    insertafter: '    opencast-allinone/15.0.0.SNAPSHOT, \\'
-    line: '    opencast-security-jwt/15.0.0.SNAPSHOT, \'
 
 - name: configure opencast
   template:
