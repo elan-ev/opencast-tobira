@@ -86,6 +86,7 @@
     - etc/org.opencastproject.fsresources.StaticResourceServlet.cfg
     - etc/org.opencastproject.liveschedule.impl.LiveScheduleServiceImpl.cfg
     - etc/security/mh_default_org.xml
+    - etc/encoding/opencast.properties
     - etc/workflows/fast.yaml
     - etc/workflows/schedule-and-upload.xml
     - bin/setenv
