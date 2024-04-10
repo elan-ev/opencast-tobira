@@ -71,7 +71,30 @@
       - tesseract-langpack-deu
       - hunspell
       - nmap-ncat
+      - python39
+      - python3-pip
+      - python3-virtualenv
     state: present
+
+- name: Install virtualenv via pip
+  pip:
+    name: virtualenv
+
+- name: install vosk-cli via pip
+  pip:
+    name: vosk-cli
+    virtualenv: /opt/vosk/venv
+
+- name: Create directory for models
+  file:
+    path: /usr/share/vosk/models
+    state: directory
+
+- name: Download and extract vosk model
+  unarchive:
+    src: 'https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip'
+    dest: /usr/share/vosk/models
+    remote_src: yes
 
 - name: configure opencast
   template:
@@ -85,6 +108,8 @@
     - etc/org.opencastproject.adminui.endpoint.SeriesEndpoint.cfg
     - etc/org.opencastproject.fsresources.StaticResourceServlet.cfg
     - etc/org.opencastproject.liveschedule.impl.LiveScheduleServiceImpl.cfg
+    - etc/org.opencastproject.speechtotext.impl.engine.VoskEngine.cfg
+    - etc/org.opencastproject.speechtotext.impl.SpeechToTextServiceImpl.cfg
     - etc/security/mh_default_org.xml
     - etc/encoding/opencast.properties
     - etc/workflows/fast.yaml
