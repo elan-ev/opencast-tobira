@@ -3,4 +3,4 @@ serverUrl = "/"
 loginProvided = true
 
 [return]
-allowedDomains = ["tobira.ethz.ch", "tobira.opencast.org", "localhost"]
+allowedDomains = ["tobira.opencast.org", "localhost"]
