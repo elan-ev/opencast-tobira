@@ -13,8 +13,7 @@
 
 - name: extract distribution
   unarchive:
-    # src: 'https://radosgw.public.os.wwu.de/opencast-daily/opencast-dist-allinone-15-SNAPSHOT.tar.gz'
-    src: 'https://github.com/opencast/opencast/releases/download/15.5/opencast-dist-allinone-15.5.tar.gz'
+    src: 'https://github.com/opencast/opencast/releases/download/15.6/opencast-dist-allinone-15.6.tar.gz'
     dest: /opt
     remote_src: true
     owner: root
