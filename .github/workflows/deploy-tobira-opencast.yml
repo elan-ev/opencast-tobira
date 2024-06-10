@@ -20,7 +20,7 @@ jobs:
           sudo apt install -y -q bzip2 gzip tar unzip
 
       - name: install ansible
-        run: pip3 install ansible dnspython
+        run: pip3 install ansible dnspython 'ansible-core<2.17'
 
       - name: prepare ssh
         env:
