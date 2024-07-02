@@ -13,7 +13,7 @@
 
 - name: extract distribution
   unarchive:
-    src: 'https://github.com/opencast/opencast/releases/download/15.6/opencast-dist-allinone-15.6.tar.gz'
+    src: 'https://radosgw.public.os.wwu.de/opencast-daily/opencast-dist-allinone-16-SNAPSHOT.tar.gz'
     dest: /opt
     remote_src: true
     owner: root
@@ -110,7 +110,6 @@
     - etc/org.opencastproject.speechtotext.impl.engine.VoskEngine.cfg
     - etc/org.opencastproject.speechtotext.impl.SpeechToTextServiceImpl.cfg
     - etc/security/mh_default_org.xml
-    - etc/encoding/opencast.properties
     - etc/workflows/fast.yaml
     - etc/workflows/schedule-and-upload.xml
     - bin/setenv
