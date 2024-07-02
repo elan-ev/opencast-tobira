@@ -95,6 +95,12 @@
     dest: /usr/share/vosk/models
     remote_src: yes
 
+- name: Download and extract german vosk model
+  unarchive:
+    src: 'https://alphacephei.com/vosk/models/vosk-model-small-de-0.15.zip'
+    dest: /usr/share/vosk/models
+    remote_src: yes
+
 - name: configure opencast
   template:
     src: '{{ item }}'
