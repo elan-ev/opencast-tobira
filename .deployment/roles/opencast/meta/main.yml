@@ -6,7 +6,7 @@ dependencies:
   - certbot
   - elan.opencast_elasticsearch
   - nginx
-  - elan.opencast_postgresql
+  # - elan.opencast_postgresql
   - elan.opencast_repository
   - elan.opencast_selinux
   - elan.opencast_user

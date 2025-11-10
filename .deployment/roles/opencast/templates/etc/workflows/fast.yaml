@@ -8,20 +8,17 @@ displayOrder: 100
 description: |-
   A minimal workflow that transcodes media into distribution formats,
   then publishes the resulting distribution files, along with their associated metadata.
-configuration_panel: |-
-  <div id="workflow-configuration">
-     <input id="straightToPublishing" name="straightToPublishing" type="checkbox" class="configField" value="true" checked=checked />
-     <label for="straightToPublishing">Straight to publishing</label>
-     <fieldset>
-       <legend>Publish live stream:</legend>
-       <ul>
-         <li>
-           <input id="publishLive" name="publishLive" type="checkbox" class="configField" value="true" />
-           <label for="publishLive">Add live event to Opencast Media Module</label>
-         </li>
-       </ul>
-     </fieldset>
-  </div>
+configuration_panel_json: |-
+  [{
+    "fieldset": [
+      {
+        "type": "checkbox",
+        "name": "straightToPublishing",
+        "label": "Straight to publishing",
+        "value": true
+      }
+    ]
+  }]
 operations:
   - id: defaults
     description: "Applying default configuration values"
@@ -53,16 +50,6 @@ operations:
       - target-flavor: "*/preview"
       - target-tags: "engage-download,engage-streaming,rss,atom"
       - encoding-profile: "fast.http"
-
-  - id: tag
-    fail-on-error: true
-    exception-handler-workflow: "partial-error"
-    description: "Tag captions for publication"
-    configurations:
-      - source-flavor: "captions/source"
-      - target-flavor: "captions/preview"
-      - target-tags: "+engage-download"
-      - copy: true
 
   - id: image
     if: "${straightToPublishing}"
@@ -125,7 +112,7 @@ operations:
     exception-handler-workflow: "partial-error"
     description: "Publishing to Engage"
     configurations:
-      - download-source-flavors: "dublincore/*,security/*"
+      - download-source-flavors: "dublincore/*,security/*,captions/*"
       - download-source-tags: "engage-download"
       - check-availability: false
 

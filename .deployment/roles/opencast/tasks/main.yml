@@ -13,7 +13,7 @@
 
 - name: extract distribution
   unarchive:
-    src: 'https://github.com/opencast/opencast/releases/download/16.1/opencast-dist-allinone-16.1.tar.gz'
+    src: 'https://github.com/opencast/opencast/releases/download/17.9/opencast-dist-allinone-17.9.tar.gz'
     dest: /opt
     remote_src: true
     owner: root
