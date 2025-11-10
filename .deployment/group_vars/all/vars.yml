@@ -16,7 +16,7 @@ opencast_letsencrypt_email: '{{ lookup("env", "OPENCAST_LETSENCRYPT_EMAIL") }}'
 # repository configuration
 # https://github.com/elan-ev/opencast_repository#role-variables
 # enable repository (testing and release)
-opencast_version_major: 17
+opencast_version_major: 18
 opencast_repository_enabled_release: true
 opencast_repository_enabled_testing: true
 

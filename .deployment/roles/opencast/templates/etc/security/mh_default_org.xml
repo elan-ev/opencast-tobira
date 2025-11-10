@@ -331,6 +331,7 @@
 
     <!-- Enable access to the Tobira module -->
     <sec:intercept-url pattern="/tobira/version" access="ROLE_ANONYMOUS" />
+    <sec:intercept-url pattern="/tobira/callback/*" method="GET" access="ROLE_ANONYMOUS" />
     <sec:intercept-url pattern="/tobira/**" access="ROLE_ADMIN" />
 
     <!-- Enable anonymous access to the annotation and the series endpoints -->
@@ -481,7 +482,7 @@
         <!-- <ref bean="shibbolethHeaderFilter" /> -->
 
         <!-- Uncomment the line below to support JWT. -->
-        <ref bean="jwtHeaderFilter" /> 
+        <ref bean="jwtHeaderFilter" />
         <!-- Additionally/alternatively uncomment this to support passing a JWT in a URL parameter. -->
         <ref bean="jwtRequestParameterFilter" />
       </list>
@@ -767,9 +768,10 @@
     <property name="jwksCacheExpiresIn" value="1440" />
     <property name="expectedAlgorithms" ref="jwtExpectedAlgorithms" />
     <property name="claimConstraints" ref="jwtClaimConstraints" />
-    <property name="usernameMapping" value="['username'].asString()" />
+    <property name="usernameMapping" value="['sub'].asString()" />
     <property name="nameMapping" value="['name'].asString()" />
-    <property name="emailMapping" value="['username'].asString() + '@tobira.invalid'" />
+    <property name="emailMapping" value="['sub'].asString() + '@tobira.invalid'" />
+    <property name="ocStandardRoleMappings" value="true" />
     <property name="roleMappings" ref="jwtRoleMappings" />
     <property name="jwtCacheSize" value="500" />
     <property name="jwtCacheExpiresIn" value="5" />
@@ -778,13 +780,14 @@
   <!-- The signing algorithms expected for the JWT signature -->
   <util:list id="jwtExpectedAlgorithms" value-type="java.lang.String">
     <value>ES256</value>
+    <value>ES384</value>
   </util:list>
 
   <!-- The claim constraints that are expected to be fulfilled by the JWT
        If you are using JWTs for OpenID Connect, see the specification for claims that must be validated:
        https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation -->
   <util:list id="jwtClaimConstraints" value-type="java.lang.String">
-    <value>containsKey('username')</value>
+    <value>containsKey('sub')</value>
     <value>containsKey('name')</value>
     <value>containsKey('exp')</value>
   </util:list>
@@ -792,7 +795,7 @@
   <!-- The mapping from JWT claims to Opencast roles -->
   <util:list id="jwtRoleMappings" value-type="java.lang.String">
     <value>'ROLE_JWT_USER'</value>
-    <value>'ROLE_JWT_USER_' + ['username'].asString()</value>
+    <value>'ROLE_JWT_USER_' + ['sub'].asString()</value>
     <value>'ROLE_STUDIO'</value>
     <value>'ROLE_ANONYMOUS'</value>
   </util:list>
