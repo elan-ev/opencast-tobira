@@ -29,3 +29,7 @@ opencast_fast_data_path: /var/opt/opencast
 
 # allow direct downloads via nginx
 opencast_storage_downloads_path: '{{ opencast_data_path }}/downloads'
+
+# Octoka
+octoka_binary_url: https://github.com/opencast/octoka/releases/download/v0.3/octoka
+octoka_binary_checksum: sha256:46e85c81f95d47c37aab10002c867199ed31f47096b7bdbb8306014db43b6f2d

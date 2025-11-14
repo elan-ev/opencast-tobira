@@ -1,0 +1,5 @@
+---
+- name: Restart octoka
+  ansible.builtin.service:
+    name: octoka
+    state: restarted

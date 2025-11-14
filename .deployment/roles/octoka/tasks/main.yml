@@ -1,0 +1,74 @@
+---
+
+- name: Create octoka user
+  ansible.builtin.user:
+    name: octoka
+
+- name: Create application and logging directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: octoka
+    group: octoka
+    mode: '0755'
+  with_items:
+    - /opt/octoka
+    - /var/log/octoka
+
+- name: Deploy octoka executable
+  ansible.builtin.get_url:
+    url: '{{ octoka_binary_url }}'
+    checksum: '{{ octoka_binary_checksum }}'
+    dest: /opt/octoka/octoka
+    force: true
+    mode: '0750'
+    owner: octoka
+    group: octoka
+  notify: Restart octoka
+
+- name: Deploy configuration
+  ansible.builtin.template:
+    src: config.toml
+    dest: /opt/octoka/
+    owner: octoka
+    group: octoka
+    mode: '0640'
+  notify: Restart octoka
+
+- name: Install octoka service files
+  ansible.builtin.template:
+    src: 'octoka.service'
+    dest: /etc/systemd/system/octoka.service
+    mode: '0644'
+    owner: root
+    group: root
+  register: octoka_systemd_unit_files_installed
+  notify: Restart octoka
+
+- name: Reload Systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+  when: octoka_systemd_unit_files_installed is changed
+
+- name: Enable octoka
+  ansible.builtin.systemd:
+    name: octoka
+    enabled: true
+
+- name: Run octoka check block
+  tags:
+    - octoka-check
+  block:
+    - name: Run octoka check
+      ansible.builtin.command: ./octoka check
+      args:
+        chdir: /opt/octoka
+      register: octoka_check
+      no_log: true
+      changed_when: false
+  always:
+    - name: Print results
+      ansible.builtin.debug:
+        msg:
+          - "{{ octoka_check.stdout_lines }}"
+          - "{{ octoka_check.stderr_lines }}"

@@ -1,0 +1,15 @@
+[Unit]
+Description=Octoka
+Documentation=https://github.com/opencast/octoka
+
+After=local-fs.target
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/octoka/
+ExecStart=/opt/octoka/octoka run
+User=octoka
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
