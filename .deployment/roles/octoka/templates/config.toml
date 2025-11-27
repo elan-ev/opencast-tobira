@@ -103,10 +103,7 @@ trusted_keys = ["https://tobira.opencast.org/.well-known/jwks.json"]
 # requests are allowed.
 #
 # Default value: []
-cors_allowed_origins = [
-    "https://tobira.opencast.org",
-    "https://jwt-static-files.tobira.opencast.org",
-]
+#cors_allowed_origins = [] # done via nginx
 
 # Where to look for a JWT in the HTTP request. First source has highest
 # priority. Each array element is an object. Possible sources:
