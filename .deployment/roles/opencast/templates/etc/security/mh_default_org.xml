@@ -19,7 +19,7 @@
   <sec:http pattern="/favicon.ico" security="none" />
 
   <sec:http create-session="ifRequired" servlet-api-provision="true" realm="Opencast"
-            entry-point-ref="opencastEntryPoint">
+            entry-point-ref="opencastEntryPoint" disable-url-rewriting="true">
 
     <sec:access-denied-handler error-page="/403.html"/>
 
@@ -53,6 +53,7 @@
     <sec:intercept-url pattern="/workflow/definitions.json" method="GET" access="ROLE_ADMIN, ROLE_UI_EVENTS_CREATE" />
     <sec:intercept-url pattern="/admin-ng/acl/acls.json" method="GET" access="ROLE_ADMIN, ROLE_UI_ACLS_VIEW" />
     <sec:intercept-url pattern="/admin-ng/acl/*" method="GET" access="ROLE_ADMIN, ROLE_UI_ACLS_VIEW" />
+    <sec:intercept-url pattern="/admin-ng/acl/acl/*" method="GET" access="ROLE_ADMIN, ROLE_UI_ACLS_VIEW" />
     <sec:intercept-url pattern="/acl-manager/acl/*" method="GET" access="ROLE_ADMIN, ROLE_UI_ACLS_VIEW" />
     <sec:intercept-url pattern="/admin-ng/capture-agents/agents.json" method="GET" access="ROLE_ADMIN, ROLE_UI_LOCATIONS_VIEW, ROLE_UI_EVENTS_CREATE" />
     <sec:intercept-url pattern="/admin-ng/capture-agents/*" method="GET" access="ROLE_ADMIN, ROLE_UI_LOCATIONS_DETAILS_CAPABILITIES_VIEW, ROLE_UI_LOCATIONS_DETAILS_CONFIGURATION_VIEW, ROLE_UI_LOCATIONS_DETAILS_GENERAL_VIEW" />
@@ -96,6 +97,7 @@
     <sec:intercept-url pattern="/admin-ng/series/*/metadata.json" method="GET" access="ROLE_ADMIN, ROLE_UI_SERIES_DETAILS_METADATA_VIEW" />
     <sec:intercept-url pattern="/admin-ng/series/*/theme.json" method="GET" access="ROLE_ADMIN, ROLE_UI_SERIES_DETAILS_THEMES_VIEW" />
     <sec:intercept-url pattern="/admin-ng/series/*/tobira/pages" method="GET" access="ROLE_ADMIN, ROLE_UI_SERIES_DETAILS_TOBIRA_VIEW" />
+    <sec:intercept-url pattern="/admin-ng/event/*/tobira/pages" method="GET" access="ROLE_ADMIN, ROLE_UI_EVENTS_DETAILS_TOBIRA_VIEW" />
     <sec:intercept-url pattern="/admin-ng/server/servers.json" method="GET" access="ROLE_ADMIN, ROLE_UI_SERVERS_VIEW" />
     <sec:intercept-url pattern="/admin-ng/series/*/hasEvents.json" method="GET" access="ROLE_ADMIN, ROLE_UI_SERIES_VIEW" />
     <sec:intercept-url pattern="/admin-ng/series/configuration.json" method="GET" access="ROLE_ADMIN, ROLE_UI_SERIES_VIEW" />
@@ -144,6 +146,7 @@
     <sec:intercept-url pattern="/admin-ng/series/*/theme" method="PUT" access="ROLE_ADMIN, ROLE_UI_SERIES_DETAILS_THEMES_EDIT" />
     <sec:intercept-url pattern="/admin-ng/themes/*" method="PUT" access="ROLE_ADMIN, ROLE_UI_THEMES_EDIT" />
     <sec:intercept-url pattern="/admin-ng/users/*" method="PUT" access="ROLE_ADMIN, ROLE_UI_USERS_EDIT" />
+    <sec:intercept-url pattern="/admin-ng/users/password/*" method="PUT" access="ROLE_ADMIN, ROLE_ADMIN_UI" />
     <sec:intercept-url pattern="/admin-ng/user-settings/signature/*" method="PUT" access="ROLE_ADMIN, ROLE_ADMIN_UI" />
     <sec:intercept-url pattern="/admin-ng/user-settings/setting/*" method="PUT" access="ROLE_ADMIN, ROLE_ADMIN_UI" />
     <sec:intercept-url pattern="/admin-ng/adopter/**" method="PUT" access="ROLE_ADMIN" />
@@ -305,6 +308,10 @@
     <sec:intercept-url pattern="/paella7/ui/auth.html" access="ROLE_USER" />
     <sec:intercept-url pattern="/paella7/ui/**" access="ROLE_ANONYMOUS" />
 
+   <!-- Paella player 8 -->
+    <sec:intercept-url pattern="/paella8/ui/auth.html" access="ROLE_USER" />
+    <sec:intercept-url pattern="/paella8/ui/**" access="ROLE_ANONYMOUS" />
+
     <!-- Enable anonymous access to the engage player and the GET endpoints it requires -->
     <sec:intercept-url pattern="/engage/ui/**" access="ROLE_ANONYMOUS" />
     <sec:intercept-url pattern="/engage/**" access="ROLE_ANONYMOUS" />
@@ -312,7 +319,9 @@
     <sec:intercept-url pattern="/search/**" method="GET" access="ROLE_ANONYMOUS" />
     <sec:intercept-url pattern="/usertracking/**" method="GET" access="ROLE_ANONYMOUS" />
     <sec:intercept-url pattern="/usertracking/**" method="PUT" access="ROLE_ANONYMOUS" />
+    <!-- The `/static` route is separately protected, see `StaticResoruceServlet` -->
     <sec:intercept-url pattern="/static/**" method="GET" access="ROLE_ANONYMOUS" />
+    <sec:intercept-url pattern="/static/**" method="HEAD" access="ROLE_ANONYMOUS" />
     <sec:intercept-url pattern="/export/**" method="GET" access="ROLE_ANONYMOUS" />
 
     <!-- Enable access to Opencast Studio -->
@@ -516,22 +525,54 @@
   <!-- Differentiates between "normal" user requests and those requesting digest auth -->
   <bean id="opencastEntryPoint" class="org.opencastproject.kernel.security.DelegatingAuthenticationEntryPoint">
     <!-- CAS Auth:  Comment this if using CAS authentication -->
+    <!-- Shibboleth Auth:  Comment this if using Shibboleth authentication -->
+    <!-- Custom Auth:  Comment this if using a custom authentication entry point -->
     <property name="userEntryPoint" ref="userEntryPoint" />
     <!-- CAS Auth:  Uncomment this if using CAS authentication -->
     <!-- <property name="userEntryPoint" ref="casEntryPoint" /> -->
+    <!-- Shibboleth Auth:  Uncomment this if using Shibboleth authentication -->
+    <!-- <property name="userEntryPoint" ref="shibbolethEntryPoint" /> -->
+    <!-- Custom Auth:  Uncomment this if using a custom authentication entry point -->
+    <!-- <property name="userEntryPoint" ref="customUserEntryPoint" /> -->
     <property name="digestAuthenticationEntryPoint" ref="digestEntryPoint" />
     <property name="basicAuthenticationEntryPoint" ref="basicEntryPoint" />
   </bean>
 
   <!-- Redirects unauthenticated requests to the login form -->
-  <bean id="userEntryPoint" class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
+  <bean id="redirectingEntryPoint" class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
     <property name="loginFormUrl" value="/login.html" />
   </bean>
 
+  <!-- Entry point that redirects to /login for certain paths, replying 403 otherwise -->
+  <bean id="userEntryPoint" class="org.opencastproject.kernel.security.UserEntryPoint">
+    <property name="redirectingEntryPoint" ref="redirectingEntryPoint" />
+    <property name="redirectingPathPatterns">
+      <list>
+        <value>**/index.html</value>
+        <value>/admin-ui/**</value>
+        <value>/admin-ng</value>
+        <value>/admin-ng/</value>
+        <value>/rest_docs.*</value>
+        <value>/rest-docs/**</value>
+        <value>/docs.*</value>
+        <value>/engage/ui/**</value>
+        <value>/studio</value>
+        <value>/studio/</value>
+        <value>/editor-ui</value>
+        <value>/editor-ui/</value>
+        <value>/engage-player</value>
+        <value>/engage-player/</value>
+        <value>/ltitools</value>
+        <value>/ltitools/</value>
+        <value>/paella*/ui/auth.html</value>
+      </list>
+    </property>
+  </bean>
+
   <!-- Redirect unauthenticated requests to custom login url with configurable redirect query parameter
-       Example: http://localhost/Shibboleth.sso/Login?target=<RELATIVE_REQUEST_URL> -->
-  <!--bean id="userEntryPoint" class="org.opencastproject.kernel.security.RedirectQueryParamAuthenticationEntryPoint">
-    <constructor-arg index="0" value="/Shibboleth.sso/Login" />
+       Example: http://localhost/sso/login?target=<RELATIVE_REQUEST_URL> -->
+  <!--bean id="customUserEntryPoint" class="org.opencastproject.kernel.security.RedirectQueryParamAuthenticationEntryPoint">
+    <constructor-arg index="0" value="/sso/login" />
     <constructor-arg index="1" value="target" />
   </bean-->
 
@@ -661,6 +702,12 @@
   <!-- # Shibboleth Support # -->
   <!-- ###################### -->
 
+  <!--
+  <bean id="shibbolethEntryPoint" class="org.opencastproject.kernel.security.RedirectQueryParamAuthenticationEntryPoint">
+    <constructor-arg index="0" value="/Shibboleth.sso/Login" />
+    <constructor-arg index="1" value="target" />
+  </bean>-->
+
   <!-- General Shibboleth header extration filter
   <bean id="shibbolethHeaderFilter"
         class="org.opencastproject.security.shibboleth.ShibbolethRequestHeaderAuthenticationFilter">
@@ -741,7 +788,7 @@
   <!-- # JWT Support # -->
   <!-- ################ -->
 
-  <!-- General JWT header extraction filter -->
+  <!-- General JWT header extraction filter-->
   <bean id="jwtHeaderFilter" class="org.opencastproject.security.jwt.JWTRequestHeaderAuthenticationFilter">
     <property name="principalRequestHeader" value="Authorization"/>
     <property name="principalPrefix" value="Bearer "/>
@@ -750,7 +797,7 @@
     <property name="exceptionIfHeaderMissing" value="false" />
   </bean>
 
-  <!-- General JWT request parameter extraction filter -->
+  <!-- General JWT request parameter extraction filter-->
   <bean id="jwtRequestParameterFilter" class="org.opencastproject.security.jwt.JWTRequestParameterAuthenticationFilter">
     <property name="parameterName" value="jwt" />
     <property name="authenticationManager" ref="authenticationManager" />
@@ -764,40 +811,54 @@
     <property name="userDirectoryService" ref="userDirectoryService" />
     <property name="securityService" ref="securityService" />
     <property name="userReferenceProvider" ref="userReferenceProvider" />
+    <!-- Set either `jwksUrl` or `secret` to enable this login handler -->
     <property name="jwksUrl" value="https://tobira.opencast.org/.well-known/jwks.json" />
-    <property name="jwksCacheExpiresIn" value="1440" />
+    <!-- <property name="secret" value="***" /> -->
     <property name="expectedAlgorithms" ref="jwtExpectedAlgorithms" />
     <property name="claimConstraints" ref="jwtClaimConstraints" />
-    <property name="usernameMapping" value="['sub'].asString()" />
-    <property name="nameMapping" value="['name'].asString()" />
-    <property name="emailMapping" value="['sub'].asString() + '@tobira.invalid'" />
+    <property name="usernameMapping" value="['sub']" />
+    <property name="nameMapping" value="['name']" />
+    <property name="emailMapping" value="['email'] ?: (['sub'] + '@tobira.invalid')" />
     <property name="ocStandardRoleMappings" value="true" />
     <property name="roleMappings" ref="jwtRoleMappings" />
     <property name="jwtCacheSize" value="500" />
     <property name="jwtCacheExpiresIn" value="5" />
+    <property name="jwksTimeToLive" value="3600000" />
   </bean>
 
   <!-- The signing algorithms expected for the JWT signature -->
   <util:list id="jwtExpectedAlgorithms" value-type="java.lang.String">
     <value>ES256</value>
+    <value>ES256K</value>
     <value>ES384</value>
+    <value>ES512</value>
+    <value>EdDSA</value>
   </util:list>
 
-  <!-- The claim constraints that are expected to be fulfilled by the JWT
+  <!-- The claim constraints that are expected to be fulfilled by the JWT.
+       The claims `exp` and `nbf` are always verified regardless of this config.
        If you are using JWTs for OpenID Connect, see the specification for claims that must be validated:
-       https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation -->
+       https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation-->
   <util:list id="jwtClaimConstraints" value-type="java.lang.String">
     <value>containsKey('sub')</value>
     <value>containsKey('name')</value>
-    <value>containsKey('exp')</value>
+    <!-- The following are just examples if you want to add additional constraints -->
+    <!-- <value>containsKey('domain')</value> -->
+    <!-- <value>['iss'] eq 'https://auth.example.org'</value> -->
+    <!-- <value>['username'] matches '.*@example\.org'</value> -->
+    <!-- <value>['affiliation'].contains('faculty@example.org')</value> -->
   </util:list>
 
-  <!-- The mapping from JWT claims to Opencast roles -->
+  <!-- The mapping from JWT claims to Opencast roles. These are in addition to
+       ocStandardRoleMappings above. -->
   <util:list id="jwtRoleMappings" value-type="java.lang.String">
     <value>'ROLE_JWT_USER'</value>
-    <value>'ROLE_JWT_USER_' + ['sub'].asString()</value>
-    <value>'ROLE_STUDIO'</value>
-    <value>'ROLE_ANONYMOUS'</value>
+    <value>'ROLE_JWT_USER_' + ['sub']</value>
+    <!-- Some more example -->
+    <!-- <value>('ROLE_JWT_OWNER_' + ['sub']).replaceAll("[^a-zA-Z0-9]","_").toUpperCase()</value> -->
+    <!-- <value>['domain'] != null ? 'ROLE_JWT_ORG_' + ['domain'] + '_MEMBER' : null</value> -->
+    <!-- <value>['username'] eq ('j_doe01@example.org') ? 'ROLE_ADMIN' : null</value> -->
+    <!-- <value>['affiliation'].contains('faculty@example.org') ? 'ROLE_GROUP_JWT_TRAINER' : null</value> -->
   </util:list>
 
   <!-- ################ -->
@@ -870,7 +931,7 @@
   <osgi:reference id="securityService" cardinality="1..1"
                   interface="org.opencastproject.security.api.SecurityService" />
 
-  <!-- Uncomment to enable external users e.g. used together with shibboleth and JWT -->
+  <!-- For enabling external users e.g. used together with shibboleth and JWT -->
   <osgi:reference id="userReferenceProvider" cardinality="1..1"
                   interface="org.opencastproject.userdirectory.api.UserReferenceProvider"  />
 
@@ -902,7 +963,7 @@
     <sec:authentication-provider ref="rememberMeAuthenticationProvider"/>
     <!-- CAS Auth: Uncomment this if using CAS authentication -->
     <!-- <sec:authentication-provider ref="casAuthenticationProvider" /> -->
-    <!-- Uncomment this if using Shibboleth or JWT authentication -->
+    <!-- For Shibboleth and JWT authentication -->
     <sec:authentication-provider ref="preauthAuthProvider" />
     <!-- Uncomment the following line if using LDAP -->
     <!-- <sec:authentication-provider ref="ldapAuthProvider" /> -->
