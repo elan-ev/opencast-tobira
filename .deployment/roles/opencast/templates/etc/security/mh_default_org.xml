@@ -818,7 +818,7 @@
     <property name="claimConstraints" ref="jwtClaimConstraints" />
     <property name="usernameMapping" value="['sub']" />
     <property name="nameMapping" value="['name']" />
-    <property name="emailMapping" value="['sub'] + '@tobira.invalid'" />
+    <property name="emailMapping" value="['email'] ?: (['sub'] + '@tobira.invalid')" />
     <property name="ocStandardRoleMappings" value="true" />
     <property name="roleMappings" ref="jwtRoleMappings" />
     <property name="jwtCacheSize" value="500" />
