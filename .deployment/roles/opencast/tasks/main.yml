@@ -123,7 +123,7 @@
 - name: User Interface Configuration
   copy:
     dest: /opt/opencast/etc/ui-config/mh_default_org/{{ item }}
-    src: '{{ item }}'
+    src: 'ui-config/mh_default_org/{{ item }}'
   loop:
     - studio/settings.toml
     - editor/editor-settings.toml
