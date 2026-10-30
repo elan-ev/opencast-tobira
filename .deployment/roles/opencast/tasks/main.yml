@@ -115,6 +115,7 @@
     - etc/org.opencastproject.liveschedule.impl.LiveScheduleServiceImpl.cfg
     - etc/org.opencastproject.speechtotext.impl.engine.VoskEngine.cfg
     - etc/org.opencastproject.speechtotext.impl.SpeechToTextServiceImpl.cfg
+    - etc/org.opencastproject.userdirectory.UserIdRoleProvider.cfg
     - etc/security/mh_default_org.xml
     - etc/workflows/fast.yaml
     - etc/workflows/schedule-and-upload.yaml
