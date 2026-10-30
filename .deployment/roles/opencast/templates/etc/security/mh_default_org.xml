@@ -854,8 +854,6 @@
   <util:list id="jwtRoleMappings" value-type="java.lang.String">
     <value>'ROLE_JWT_USER'</value>
     <value>'ROLE_JWT_USER_' + ['sub']</value>
-    <value>'ROLE_STUDIO'</value>
-    <value>'ROLE_ANONYMOUS'</value>
     <!-- Some more example -->
     <!-- <value>('ROLE_JWT_OWNER_' + ['sub']).replaceAll("[^a-zA-Z0-9]","_").toUpperCase()</value> -->
     <!-- <value>['domain'] != null ? 'ROLE_JWT_ORG_' + ['domain'] + '_MEMBER' : null</value> -->
