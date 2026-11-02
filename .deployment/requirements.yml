@@ -1,7 +1,8 @@
 ---
 
 roles:
-  - lkiesow.dnf_autoupdate
+  - name: lkiesow.dnf_autoupdate
+    version: "2.0.1"
   - elan.opencast_elasticsearch
   - elan.opencast_firewalld
   - elan.opencast_postgresql
