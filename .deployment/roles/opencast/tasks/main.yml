@@ -13,7 +13,7 @@
 
 - name: extract distribution
   unarchive:
-    src: 'https://github.com/opencast/opencast/releases/download/18.2/opencast-dist-allinone-18.2.tar.gz'
+    src: 'https://github.com/opencast/opencast/releases/download/20.5/opencast-dist-allinone-20.5.tar.gz'
     dest: /opt
     remote_src: true
     owner: root
@@ -115,15 +115,16 @@
     - etc/org.opencastproject.liveschedule.impl.LiveScheduleServiceImpl.cfg
     - etc/org.opencastproject.speechtotext.impl.engine.VoskEngine.cfg
     - etc/org.opencastproject.speechtotext.impl.SpeechToTextServiceImpl.cfg
+    - etc/org.opencastproject.userdirectory.UserIdRoleProvider.cfg
     - etc/security/mh_default_org.xml
     - etc/workflows/fast.yaml
-    - etc/workflows/schedule-and-upload.xml
+    - etc/workflows/schedule-and-upload.yaml
     - bin/setenv
 
 - name: User Interface Configuration
   copy:
     dest: /opt/opencast/etc/ui-config/mh_default_org/{{ item }}
-    src: '{{ item }}'
+    src: 'ui-config/mh_default_org/{{ item }}'
   loop:
     - studio/settings.toml
     - editor/editor-settings.toml

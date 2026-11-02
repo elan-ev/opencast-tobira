@@ -66,6 +66,21 @@ allowedCallbackPrefixes = ["https"]
 #
 # # This catalog is specified but empty, and as such will not be displayed
 # [metadata.configureFields."NameOfAnExtendedMetadataCatalog"]
+#
+# We disable some metadata by default.
+# Remove or comment out the following block to show all metadata:
+#
+[metadata.configureFields."EVENTS.EVENTS.DETAILS.CATALOG.EPISODE"]
+subject = {show = false}
+rightsHolder = {show = false}
+location = {show = false}
+source = {show = false}
+duration = {show = false}
+publisher = {show = false}
+created = {show = false}
+license = {show = false}
+contributor = {show = false}
+identifier = {show = false}
 
 
 ####
@@ -97,6 +112,11 @@ show = true
 # Type: string
 # Default: "captions"
 #mainFlavor = "captions"
+
+# If set to true, video playback stops when typing in the subtitle fields
+# Type: boolean
+# Default: false
+#stopOnTyping = false
 
 [subtitles.languages]
 ## A list of languages for which new subtitles can be created
