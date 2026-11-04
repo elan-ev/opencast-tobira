@@ -31,7 +31,7 @@ downloads_path = "{{ opencast_storage_downloads_path }}"
 #   This option will get deprecated and removed in the future.
 #
 # Default value: "head"
-fallback = "get" # Temporary until OC bug fix lands
+#fallback = "head"
 
 # List of possible path prefixes that should be handled by octoka. For
 # most Opencast systems, the default is fine as all paths start with
