@@ -6,8 +6,7 @@
 
 [opencast]
 # Path to the Opencast `downloads/` folder, e.g. `/mnt/opencast/downloads`.
-# Settings this is required in some situations (e.g. if `http.serve_files`
-# is enabled).
+# Setting this is required if `http.on_allow` is `"file"`.
 downloads_path = "{{ opencast_storage_downloads_path }}"
 
 # Host of Opencast. Currently used for `fallback`.
@@ -84,7 +83,7 @@ trusted_keys = ["https://tobira.opencast.org/.well-known/jwks.json"]
 #   `opencast.downloads_path` to be set!
 # - "x-accel-redirect:<prefix>": status 204, empty body, `X-Accel-Redirect`
 #   header is set to `<prefix>/<stripped_path>` where `stripped_path` is
-#   therequest path stripped of `opencast.path_prefixes`.
+#   the request path stripped of `opencast.path_prefixes`.
 #
 # Default value: "file"
 #on_allow = "file"
@@ -113,7 +112,8 @@ trusted_keys = ["https://tobira.opencast.org/.well-known/jwks.json"]
 #   is used.
 # - `{ source = "header", name = "Authorization", prefix = "Bearer " }`:
 #   from first HTTP header with the given name. The optional `prefix` is
-#   stripped from the header value.
+#   stripped from the header value. If the header value does not start
+#   with the given prefix, it is ignored.
 #
 # Default value: [{ source = "header", name = "Authorization", prefix = "Bearer " }, { source = "query", name = "jwt" }]
 #jwt_sources = [{ source = "header", name = "Authorization", prefix = "Bearer " }, { source = "query", name = "jwt" }]
@@ -146,7 +146,7 @@ trusted_keys = ["https://tobira.opencast.org/.well-known/jwks.json"]
 #
 # Take the following example: the following config only allows ≥"info"
 # logs from octoka generally, but also ≥"trace" messages from the `http`
-# submodule. But it completely disables all logs from `tobira::http::fs`.
+# submodule. But it completely disables all logs from `octoka::http::fs`.
 # Finally, it also enabled ≥"debug" messages from one of octoka's
 # dependencies, the HTTP library `hyper`.
 #

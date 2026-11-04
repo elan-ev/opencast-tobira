@@ -31,5 +31,5 @@ opencast_fast_data_path: /var/opt/opencast
 opencast_storage_downloads_path: '{{ opencast_data_path }}/downloads'
 
 # Octoka
-octoka_binary_url: https://github.com/opencast/octoka/releases/download/v0.4/octoka
-octoka_binary_checksum: sha256:15d629f0a2a23c46bdd7eae00816e25407d86d002f0c0e1fedc48553ef6cd97a
+octoka_binary_url: https://github.com/opencast/octoka/releases/download/v1.4/octoka
+octoka_binary_checksum: sha256:ea476d29f082f62561d8e529fa7e379ce82d3a9643ccc35bfb66818f80990e66
